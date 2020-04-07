@@ -1,0 +1,48 @@
+---
+- name: Get the list of installed packages
+  uri:
+    url: "https://{{ public_dns_name }}:8443/mgmt/shared/iapp/global-installed-packages"
+    method: GET
+    status_code: 200
+    timeout: 600
+    body_format: json
+    return_content: yes
+    force_basic_auth: yes
+    user: "{{ bigip_username }}"
+    password: "{{ bigip_password }}"
+    validate_certs: no
+  register: package_result
+  ignore_errors: yes
+  until: 
+    - package_result.status == 200
+    - package_result.json.items is defined
+  retries: 60
+  delay: 10
+
+- name: Print result of installed packages retrievel attempt with with unexpected result
+  debug:
+    msg: |
+      HTTP Status: {{ package_result.status }}
+      HTTP Body: {{ (package_result.json is defined) | ternary(package_result.json | to_nice_json, package_result.content) }}
+  when: >
+    package_result.json is undefined or
+    package_result.json.items is undefined or
+    package_result.status != 200
+
+- name: Check if package is installed
+  set_fact:
+    package_json: "{{ package_json|default([]) + package_result.json | json_query(query) }}"
+  when: item in packages
+  vars:
+    query: "items[?appName=='{{ supported_packages[item].app_name }}']"
+  with_items: "{{ packages }}"
+
+- name: Fetch version of package is installed
+  set_fact:
+    package_version: "{{ package_version|default({}) | combine( {item.appName: item.version} ) }}"
+    when: item in packages
+  with_items: "{{ package_json }}"
+
+- name: Print the detected package versions
+  debug:
+    var: package_version

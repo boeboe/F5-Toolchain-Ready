@@ -1,0 +1,18 @@
+---
+- name: Check if valid packages to be verified
+  debug:
+    msg: "Going to check for {{ item }} package"
+  failed_when: item not in supported_packages
+  with_items: "{{ packages }}"
+
+- name: Wait for the Management UI port to become available
+  wait_for:
+    host: "{{ bigip_mgmt_address }}"
+    port: "{{ bigip_mgmt_port }}"
+    timeout: 600
+
+- name: Include tasks to verify package installation
+  include_tasks: verify-installed.yml
+
+- name: Include tasks to check for package readiness
+  include_tasks: verify-ready.yml

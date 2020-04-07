@@ -1,0 +1,13 @@
+supported_packages:
+    do:
+        app_name: f5-declarative-onboarding
+        api_endpoint: /mgmt/shared/declarative-onboarding
+    as3:
+        app_name: f5-appsvcs
+        api_endpoint: /mgmt/shared/appsvcs/declare
+    ts:
+        app_name: f5-telemetry
+        api_endpoint: /mgmt/shared/telemetry/declare
+    sd:
+        app_name: f5-service-discovery
+        api_endpoint: /mgmt/shared/appsvcs/declare

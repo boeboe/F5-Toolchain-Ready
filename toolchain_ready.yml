@@ -1,0 +1,16 @@
+---
+- name: F5 Automation Toolchain pre-checks
+  hosts: bigip
+  connection: local
+  roles:
+    - role: toolchain_prechecks
+      vars:
+        packages: 
+          - do
+          - as3
+          - ts
+          - sd
+        bigip_mgmt_address: "mybig_ip_or_dns"
+        bigip_mgmt_port: 8443
+        bigip_username: "admin"
+        bigip_password: "password"

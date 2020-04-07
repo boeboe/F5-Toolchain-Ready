@@ -1,0 +1,26 @@
+---
+- name: Verify if package is ready to accept REST calls
+  uri:
+    url: "https://{{ bigip_mgmt_address }}:{{ bigip_mgmt_port }}{{ supported_packages[item].api_endpoint }}"
+    method: GET
+    status_code: 
+        - 200
+        - 204
+    timeout: 300
+    body_format: json
+    return_content: yes
+    force_basic_auth: yes
+    user: "{{ bigip_username }}"
+    password: "{{ bigip_password }}"
+    validate_certs: no
+  register: do_get_result
+  ignore_errors: yes
+  until: >
+    do_get_result.content == "[]" or
+    do_get_result.status == 204 or 
+    do_get_result.json.selfLink is defined or
+    do_get_result.json.message == "success"
+  retries: 60
+  delay: 10
+  when: item in packages
+  with_items: "{{ packages }}"
